@@ -1,0 +1,3 @@
+exports = {
+  bbb: 222
+}
