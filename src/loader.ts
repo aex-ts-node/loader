@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2019 
+ * Copyright(c) 2019
  * Aex Project
  * @author calidion<calidion@gmail.com>
  */
@@ -13,7 +13,7 @@ import * as path from "path";
 
 export class Loader {
   // Component base directory
-  protected dir = ""
+  protected dir = "";
 
   // Stored data from specified directory.
   protected data: any = {};
@@ -27,9 +27,7 @@ export class Loader {
 
   protected allowedExts: string[] = [".js", ".ts", ".json"];
 
-  constructor(dir: string,
-    nameless: boolean = false
-  ) {
+  constructor(dir: string, nameless: boolean = false) {
     this.dir = dir;
     this.nameless = nameless;
   }
@@ -39,7 +37,6 @@ export class Loader {
       data = { ...data, ...json };
     } else {
       data[name] = json;
-
     }
     return data;
   }
@@ -64,8 +61,8 @@ export class Loader {
     try {
       const loaded = require(absPath);
       return { path: absPath, loaded };
-    }
-    catch (e) {
+    } catch (e) {
+      // tslint:disable-next-line:no-console
       console.error(e);
       return false;
     }
@@ -77,25 +74,26 @@ export class Loader {
       return false;
     }
     const files = fs.readdirSync(dir);
-    files.forEach((file) => {
+    files.forEach(file => {
       return iterator(dir, file);
     });
     return dir;
   }
 
-
   public load() {
     let data = {};
-    if (this.dirReader(this.dir, (realDir: string, file: string) => {
-      const absPath = path.resolve(realDir, file);
+    if (
+      this.dirReader(this.dir, (realDir: string, file: string) => {
+        const absPath = path.resolve(realDir, file);
 
-      const parsed = this.parseFile(absPath);
-      if (!parsed) {
-        return;
-      }
-      const name = path.basename(parsed.path, path.extname(parsed.path))
-      data = this.extends(name, parsed.loaded, data);
-    })) {
+        const parsed = this.parseFile(absPath);
+        if (!parsed) {
+          return;
+        }
+        const name = path.basename(parsed.path, path.extname(parsed.path));
+        data = this.extends(name, parsed.loaded, data);
+      })
+    ) {
       return data;
     }
     return false;
