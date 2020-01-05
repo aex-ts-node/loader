@@ -1,5 +1,5 @@
 import * as path from "path";
-import { Loader } from '../src/loader';
+import { Loader } from "../src/loader";
 
 test("Should load with name", () => {
   const loader = new Loader(path.resolve(__dirname, "../fixture-tests/"));
@@ -14,15 +14,6 @@ test("Should load with nameless", () => {
   const loader = new Loader(path.resolve(__dirname, "../fixture-tests/"), true);
   const object: any = loader.load();
   expect(object).toMatchObject({ default: { css: 1111 }, json: "Hello world" });
-});
-
-test("Should parse", () => {
-  const parsed = Loader.parse(15);
-  const parsed1 = Loader.parse(2);
-  const parsed0 = Loader.parse();
-  expect(parsed === "").toBeTruthy();
-  expect(parsed1 === __dirname).toBeTruthy();
-  expect(parsed0).toBeTruthy();
 });
 
 test("Should load with nameless", () => {

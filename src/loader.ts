@@ -12,21 +12,26 @@ import * as path from "path";
  */
 
 export class Loader {
+  public static parse() {
+    const dirs = Loader.getDirs();
+    return dirs[1];
+  }
 
-  public static parse(step: number = 1) {
-    let idx = 0;
+  public static getDirs() {
     const files = stack();
-    for (const site of files) {
-      const filename = site.getFileName();
+    const dirs: string[] = [];
+    for (const file of files) {
+      const filename = file.getFileName();
       if (!filename) {
         continue;
       }
-      idx++;
-      if (idx === step) {
-        return path.dirname(site.getFileName());
+      const dirname = path.dirname(file.getFileName());
+      if (dirs.indexOf(dirname) !== -1) {
+        continue;
       }
+      dirs.push(dirname);
     }
-    return "";
+    return dirs;
   }
   // Component base directory
   protected dir = "";
@@ -45,16 +50,13 @@ export class Loader {
 
   constructor(dir: string, nameless: boolean = false) {
     if (path.isAbsolute(dir)) {
-      if (!fs.existsSync(dir)) {
-        throw new Error("Not such directory!");
-      }
       this.dir = dir;
     } else {
-      const parentDir = Loader.parse(3);
+      const parentDir = Loader.parse();
       this.dir = path.resolve(parentDir, dir);
-      if (!fs.existsSync(this.dir)) {
-        throw new Error("Not such directory!");
-      }
+    }
+    if (!fs.existsSync(this.dir)) {
+      throw new Error("Not such directory!");
     }
     this.nameless = nameless;
   }
