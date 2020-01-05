@@ -1,6 +1,6 @@
 {
   "name": "@aex/loader",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Aex loader",
   "license": "MIT",
   "repository": "https://github.com/aex-ts-node/loader",
@@ -29,7 +29,10 @@
     "watch": "npm run build -- --watch",
     "watch:test": "jest --watch"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/callsite": "^1.0.30",
+    "callsite": "^1.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^23.3.3",
     "@types/node": "^10.11.4",

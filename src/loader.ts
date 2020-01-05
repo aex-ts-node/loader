@@ -4,14 +4,30 @@
  * @author calidion<calidion@gmail.com>
  */
 
+import * as stack from "callsite";
 import * as fs from "fs";
 import * as path from "path";
-
 /**
  * Loader for Aex
  */
 
 export class Loader {
+
+  public static parse(step: number = 1) {
+    let idx = 0;
+    const files = stack();
+    for (const site of files) {
+      const filename = site.getFileName();
+      if (!filename) {
+        continue;
+      }
+      idx++;
+      if (idx === step) {
+        return path.dirname(site.getFileName());
+      }
+    }
+    return "";
+  }
   // Component base directory
   protected dir = "";
 
@@ -28,11 +44,37 @@ export class Loader {
   protected allowedExts: string[] = [".js", ".ts", ".json"];
 
   constructor(dir: string, nameless: boolean = false) {
-    this.dir = dir;
+    if (path.isAbsolute(dir)) {
+      if (!fs.existsSync(dir)) {
+        throw new Error("Not such directory!");
+      }
+      this.dir = dir;
+    } else {
+      const parentDir = Loader.parse(3);
+      this.dir = path.resolve(parentDir, dir);
+      if (!fs.existsSync(this.dir)) {
+        throw new Error("Not such directory!");
+      }
+    }
     this.nameless = nameless;
   }
 
-  public extends(name: string, json: object, data: any) {
+  public load() {
+    let data = {};
+    this.dirReader(this.dir, (realDir: string, file: string) => {
+      const absPath = path.resolve(realDir, file);
+
+      const parsed = this.parseFile(absPath);
+      if (!parsed) {
+        return;
+      }
+      const name = path.basename(parsed.path, path.extname(parsed.path));
+      data = this.extends(name, parsed.loaded, data);
+    });
+    return data;
+  }
+
+  protected extends(name: string, json: object, data: any) {
     if (this.nameless) {
       data = { ...data, ...json };
     } else {
@@ -41,14 +83,7 @@ export class Loader {
     return data;
   }
 
-  public parseDir(dir: string) {
-    if (fs.existsSync(dir)) {
-      return dir;
-    }
-    return false;
-  }
-
-  public parseFile(absPath: string) {
+  protected parseFile(absPath: string) {
     const stat = fs.statSync(absPath);
     // ignore directories
     if (stat && stat.isDirectory()) {
@@ -68,34 +103,11 @@ export class Loader {
     }
   }
 
-  public dirReader(dir: string, iterator: any) {
-    const parsed = this.parseDir(dir);
-    if (!parsed) {
-      return false;
-    }
+  protected dirReader(dir: string, iterator: any) {
     const files = fs.readdirSync(dir);
     files.forEach(file => {
       return iterator(dir, file);
     });
     return dir;
-  }
-
-  public load() {
-    let data = {};
-    if (
-      this.dirReader(this.dir, (realDir: string, file: string) => {
-        const absPath = path.resolve(realDir, file);
-
-        const parsed = this.parseFile(absPath);
-        if (!parsed) {
-          return;
-        }
-        const name = path.basename(parsed.path, path.extname(parsed.path));
-        data = this.extends(name, parsed.loaded, data);
-      })
-    ) {
-      return data;
-    }
-    return false;
   }
 }
